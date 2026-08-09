@@ -33,6 +33,8 @@ export const createProject = async (req: Request, res: Response) => {
     productName,
     productDescription,
     targetLength = 5,
+    script = "", // ← new
+    language = "English", // ← new
   } = req.body;
 
   const images: any = req.files;
@@ -84,6 +86,8 @@ export const createProject = async (req: Request, res: Response) => {
         aspectRatio,
         targetLength: parseInt(targetLength),
         uploadedImages,
+        script, // ← new
+        language, // ← new
         isGenerating: true,
       },
     });
@@ -129,9 +133,11 @@ export const createProject = async (req: Request, res: Response) => {
 
     const prompt = {
       text: `Combine the person and product into realistic photo.
-        Make the person naturally hold or use the product.Match lighting, shadows, scale and perspective.Make the person
-        stand in professional studio lighting.Output ecommerce-quality photo realistic imagery.
-        ${userPrompt}`,
+    Make the person naturally hold or use the product. Match lighting, shadows, scale and perspective.
+    Make the person stand in professional studio lighting.
+    Output ecommerce-quality photo realistic imagery.
+    ${script ? `The person will be speaking this line in the video, so their expression/pose should suit: "${script}"` : ""}
+    ${userPrompt}`,
     };
 
     //Generate image using ai model
@@ -290,25 +296,27 @@ export const createVideo = async (req: Request, res: Response) => {
 
     // 6. Create video prompt
     const prompt = `
-      Create a realistic UGC product advertisement video.
+  Create a realistic UGC product advertisement video.
 
-      The person should naturally showcase and use the product.
+  The person should naturally showcase and use the product.
 
-      Product:
-      ${project.productName}
+  Product:
+  ${project.productName}
 
-      ${
-        project.productDescription
-          ? `Product Description:
-      ${project.productDescription}`
-          : ""
-      }
+  ${project.productDescription ? `Product Description:\n${project.productDescription}` : ""}
 
-      Make the person's movements natural and realistic.
-      Keep the product clearly visible.
-      Use realistic lighting, shadows, camera movement and human motion.
-      Make it look like a professional social media advertisement.
-      `;
+  ${
+    project.script
+      ? `The person must speak the following lines naturally and clearly in ${project.language}, with lip sync matching the audio:
+  "${project.script}"`
+      : `The person may speak a short, natural line about the product in ${project.language}.`
+  }
+
+  Make the person's movements natural and realistic.
+  Keep the product clearly visible.
+  Use realistic lighting, shadows, camera movement and human motion.
+  Make it look like a professional social media advertisement.
+`;
 
     // 7. Generate video with Veo
     console.log("3️⃣ Calling Veo 3.1");
@@ -489,6 +497,36 @@ export const deleteProject = async (
     });
 
     res.json({ message: "Project deleted" });
+  } catch (error: any) {
+    Sentry.captureException(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+export const updateProjectScript = async (req: Request<{ projectId: string }>, res: Response) => {
+  try {
+    const { userId } = req.auth();
+    const { projectId } = req.params;
+    const { script, language } = req.body;
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId, userId },
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    const updated = await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        ...(script !== undefined && { script }),
+        ...(language !== undefined && { language }),
+      },
+    });
+
+    res.json({ project: updated });
   } catch (error: any) {
     Sentry.captureException(error);
     res.status(500).json({ message: error.message });

@@ -5,6 +5,7 @@ import {
   Loader2Icon,
   RefreshCwIcon,
   SparkleIcon,
+  SparklesIcon,
   VideoIcon,
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -12,6 +13,8 @@ import { GhostButton, PrimaryButton } from "../components/Buttons";
 import { useAuth, useUser } from "@clerk/react";
 import api from "../config/axios";
 import toast from "react-hot-toast";
+
+const LANGUAGES = ['English', 'Hindi', 'Hinglish', 'Spanish', 'French', 'Arabic', 'Portuguese']
 
 const Result = () => {
   const { projectId } = useParams();
@@ -23,6 +26,10 @@ const Result = () => {
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const [language, setLanguage] = useState('English');
+  const [script, setScript] = useState('');
+  const [isGeneratingScript, setIsGeneratingScript] = useState(false);
+
   const fetchProjectData = async () => {
     try {
       const token = await getToken();
@@ -31,6 +38,8 @@ const Result = () => {
       });
       setProjectData(data.project);
       setIsGenerating(data.project.isGenerating);
+      setLanguage(data.project.language || 'English');
+      setScript(data.project.script || '');
       setLoading(false);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Failed to load project");
@@ -40,10 +49,35 @@ const Result = () => {
     }
   };
 
+  const handleGenerateScript = async () => {
+    try {
+      setIsGeneratingScript(true);
+      const token = await getToken();
+      const { data } = await api.post('/api/ai/generate-script', {
+        productName: project.productName,
+        productDescription: project.productDescription,
+        userPrompt: project.userPrompt,
+        language,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+
+      setScript(data.script);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message);
+    } finally {
+      setIsGeneratingScript(false);
+    }
+  };
+
   const handleGenerateVideo = async () => {
     setIsGenerating(true);
     try {
       const token = await getToken();
+
+      // Save the script + language before kicking off video generation
+      await api.patch(`/api/project/${projectId}/script`, { script, language }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       const { data } = await api.post(
         "/api/project/video",
         { projectId },
@@ -169,6 +203,32 @@ const Result = () => {
                 </a>
               </div>
             </div>
+
+            {/* Script + language, only relevant before video exists */}
+            {!project.generatedVideo && (
+              <div className="glass-panel p-6 rounded-2xl">
+                <h3 className="text-xl font-semibold mb-4">Video Script</h3>
+
+                <div className="mb-4">
+                  <label htmlFor="language" className="block text-sm mb-2 text-gray-300">Language</label>
+                  <select id="language" value={language} onChange={(e)=>setLanguage(e.target.value)}
+                    className="w-full bg-white/3 rounded-lg border-2 p-3 text-sm border-violet-200/10 focus:border-violet-500/50 outline-none transition-all">
+                    {LANGUAGES.map(l => <option key={l} value={l} className="bg-neutral-900">{l}</option>)}
+                  </select>
+                </div>
+
+                <div className="mb-2 flex items-center justify-between">
+                  <label htmlFor="script" className="text-sm text-gray-300">What the model will say</label>
+                  <GhostButton type="button" onClick={handleGenerateScript} disabled={isGeneratingScript}
+                    className="!px-3 !py-1 text-xs disabled:opacity-50 disabled:cursor-not-allowed">
+                    {isGeneratingScript ? <Loader2Icon className="size-3 animate-spin"/> : <SparklesIcon className="size-3"/>} Generate
+                  </GhostButton>
+                </div>
+                <textarea id="script" rows={4} value={script}
+                  onChange={(e)=>setScript(e.target.value)} placeholder="Click 'Generate' or write your own lines here."
+                  className="w-full bg-white/3 rounded-lg border-2 p-3 text-sm border-violet-200/10 focus:border-violet-500/50 outline-none resize-none transition-all"/>
+              </div>
+            )}
 
             {/* generate video button */}
             <div className="glass-panel p-6 rounded-2xl relative overflow-hidden">

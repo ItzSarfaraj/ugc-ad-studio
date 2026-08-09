@@ -29,8 +29,10 @@ app.get("/debug-sentry", function mainHandler(req, res) {
 });
 app.use('/api/user', userRouter)
 app.use('/api/project', projectRouter)
+app.use('/api/ai', aiRouter)
 
 import imagekit from "./configs/imagekit.js";
+import aiRouter from "./routes/aiRoutes.js";
 
 app.get("/imagekit-test", async (req, res) => {
     res.json({

@@ -21,6 +21,8 @@ export interface Project{
     productName: string;
     productDescription?:string;
     userPrompt?:string;
+    script?: string;      // ← new
+    language?: string;    // ← new
     aspectRatio:string;
     targetLength:number;
     generatedImage?: string;

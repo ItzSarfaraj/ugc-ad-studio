@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "server": "nodemon --exec tsx server.ts",
-    "build": "prisma generate && tsc"
+    "build": "prisma generate && tsc && cpx \"configs/**/*.mjs\" dist/configs"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +33,7 @@
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.2",
     "@types/pg": "^8.20.4",
+    "cpx2": "^8.0.2",
     "nodemon": "^3.1.14",
     "prisma": "^7.9.1",
     "ts-node": "^10.9.2",

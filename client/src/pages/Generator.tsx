@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react"
+import  { useState, useRef, useEffect } from "react"
 import type {  MouseEvent as ReactMouseEvent } from "react"
 import Title from "../components/Title"
 import UploadZone from "../components/UploadZone"

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react"
-import type { ReactNode, MouseEvent as ReactMouseEvent } from "react"
+import type {  MouseEvent as ReactMouseEvent } from "react"
 import Title from "../components/Title"
 import UploadZone from "../components/UploadZone"
 import { Loader2Icon, RectangleHorizontalIcon, RectangleVerticalIcon, SparklesIcon, Wand2Icon } from "lucide-react"
@@ -121,7 +121,6 @@ const Generator = () => {
 
   const {user} = useAuth();
   const navigate = useNavigate();
-  const reduceMotion = useReducedMotion();
 
   const[name, setName] = useState('')
   const[productName, setProductName] = useState('')

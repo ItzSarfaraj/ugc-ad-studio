@@ -5,7 +5,7 @@ import { prisma } from "../configs/prisma.js";
 //get user credits
 export const getUserCredits = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.auth();
+    const userId = req.userId;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -24,7 +24,7 @@ export const getUserCredits = async (req: Request, res: Response) => {
 export const getAllProjects = async (req: Request, res: Response) => {
   try {
 
-    const { userId } = req.auth();
+    const userId = req.userId as string;
     const projects = await prisma.project.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
@@ -42,7 +42,7 @@ export const getAllProjects = async (req: Request, res: Response) => {
 export const getProjectById = async (req: Request<{ projectId: string }>, res: Response) => {
   try {
 
-    const { userId } = req.auth();
+    const userId = req.userId as string;
     const { projectId } = req.params;
     const project = await prisma.project.findUnique({
       where: {id : projectId,userId }
@@ -61,7 +61,7 @@ export const getProjectById = async (req: Request<{ projectId: string }>, res: R
 export const toggleProjectPublic = async (req: Request<{ projectId: string }>, res: Response) => {
   try {
 
-    const { userId } = req.auth();
+    const userId = req.userId as string;
     const { projectId } = req.params;
     const project = await prisma.project.findUnique({
       where: {id : projectId,userId }

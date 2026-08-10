@@ -8,15 +8,31 @@ datasource db {
 }
 
 model User {
-  id        String   @id
-  email     String
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
   name      String
-  image     String
+  image     String   @default("")
+  plan      String   @default("free")   // "free" | "pro" | "premium"
   credits   Int      @default(20)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   projects Project[]
+  payments Payment[]
+}
+
+model Payment {
+  id                String   @id @default(uuid())
+  userId            String
+  razorpayOrderId   String   @unique
+  razorpayPaymentId String?
+  plan              String
+  amount            Int
+  status            String   @default("created") // created | paid | failed
+  createdAt         DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Project {

@@ -1,12 +1,13 @@
-//defining express datatypes
-import { Request } from 'express';
+// Defining Express datatypes
 
 declare global {
-    namespace Express {
-        interface Request{
-            auth : ()=> {userId:string; has:(permission:any)=>boolean};
-            plan? : string;
-            file:any;
-        }
+  namespace Express {
+    interface Request {
+      userId?: string;
+      plan?: string;
+      file: any;
     }
+  }
 }
+
+export {};

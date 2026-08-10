@@ -23,7 +23,7 @@ const loadImage = (path: string, mimeType: string) => {
 
 export const createProject = async (req: Request, res: Response) => {
   let tempProjectId: string;
-  const { userId } = req.auth();
+  const userId = req.userId as string;
   let isCreditDeducted = false;
 
   const {
@@ -214,7 +214,7 @@ export const createProject = async (req: Request, res: Response) => {
 };
 
 export const createVideo = async (req: Request, res: Response) => {
-  const { userId } = req.auth();
+  const userId = req.userId as string;
   const { projectId } = req.body;
 
   let isCreditDeducted = false;
@@ -481,7 +481,7 @@ export const deleteProject = async (
   res: Response,
 ) => {
   try {
-    const { userId } = req.auth();
+    const userId = req.userId as string;
     const { projectId } = req.params;
 
     const project = await prisma.project.findUnique({
@@ -506,7 +506,7 @@ export const deleteProject = async (
 
 export const updateProjectScript = async (req: Request<{ projectId: string }>, res: Response) => {
   try {
-    const { userId } = req.auth();
+    const userId = req.userId as string;
     const { projectId } = req.params;
     const { script, language } = req.body;
 

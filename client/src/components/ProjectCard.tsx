@@ -11,7 +11,6 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { GhostButton, PrimaryButton } from "./Buttons";
-import { useAuth } from "@clerk/react";
 import api from "../config/axios";
 import toast from "react-hot-toast";
 
@@ -24,8 +23,6 @@ const ProjectCard = ({
   setGenerations: React.Dispatch<React.SetStateAction<Project[]>>;
   forCommunity?: boolean;
 }) => {
-  const { getToken } = useAuth();
-
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -35,10 +32,7 @@ const ProjectCard = ({
     );
     if (!confirm) return;
     try {
-      const token = await getToken();
-      const { data } = await api.delete(`/api/project/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await api.delete(`/api/project/${id}`);
       setGenerations((generations) =>
         generations.filter((gen) => gen.id !== id),
       );
@@ -51,14 +45,17 @@ const ProjectCard = ({
 
   const togglePublish = async (projectId: string) => {
     try {
-      const token = await getToken();
-      const { data } = await api.get(`/api/user/publish/${projectId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await api.get(`/api/user/publish/${projectId}`);
       setGenerations((generations) =>
-        generations.map((gen) => gen.id === projectId ? { ...gen, isPublished: data.isPublished} : gen)
+        generations.map((gen) =>
+          gen.id === projectId
+            ? { ...gen, isPublished: data.isPublished }
+            : gen,
+        ),
       );
-      toast.success(data.isPublished ? "Project Published" : "Project Unpublished");
+      toast.success(
+        data.isPublished ? "Project Published" : "Project Unpublished",
+      );
     } catch (error: any) {
       toast.error(error?.response?.data?.message || error.message);
       console.log(error);
@@ -135,7 +132,7 @@ const ProjectCard = ({
                 >
                   {gen.generatedImage && (
                     <a
-                      href="#"
+                      href={gen.generatedImage}
                       download
                       className="flex gap-2 items-center px-4 py-2 hover:bg-black/10 cursor-pointer"
                     >
@@ -146,7 +143,7 @@ const ProjectCard = ({
 
                   {gen.generatedVideo && (
                     <a
-                      href="#"
+                      href={gen.generatedVideo}
                       download
                       className="flex gap-2 items-center px-4 py-2 hover:bg-black/10 cursor-pointer"
                     >
@@ -209,7 +206,7 @@ const ProjectCard = ({
               </p>
               {gen.updatedAt && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Updated: {new Date(gen.updatedAt).toLocaleString()}
+                  Updated: {new Date(gen.updatedAt as string).toLocaleString()}
                 </p>
               )}
             </div>

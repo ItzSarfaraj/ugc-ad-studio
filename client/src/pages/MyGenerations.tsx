@@ -3,15 +3,14 @@ import type { Project } from "../types";
 import { Loader2Icon } from "lucide-react";
 import ProjectCard from "../components/ProjectCard";
 import { PrimaryButton } from "../components/Buttons";
-import { useAuth, useUser } from "@clerk/react";
+import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../config/axios";
 import toast from "react-hot-toast";
 
 const MyGenerations = () => {
 
-  const {user, isLoaded} = useUser()
-  const {getToken} = useAuth()
+  const {user, isLoaded} = useAuth()
   const navigate = useNavigate()
 
 
@@ -20,10 +19,7 @@ const MyGenerations = () => {
   
     const fetchMyGenerations = async()=>{
        try{
-          const token = await getToken();
-          const { data } = await api.get('/api/user/projects',{
-            headers:{ Authorization: `Bearer ${token}`}
-          })
+          const { data } = await api.get('/api/user/projects')
           setGenerations(data.projects)
           setLoading(false);
        }catch(error:any){
